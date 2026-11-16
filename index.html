@@ -383,6 +383,7 @@ h1, h2, h3, p { margin-top: 0; }
 .world-map-arena[hidden] { display: none; }
 .world-map-hint { position: absolute; z-index: 1; top: 12px; left: 16px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.75); border-radius: 20px; background: rgba(255,255,255,.88); color: #355a4a; font-size: 11px; font-weight: 700; pointer-events: none; }
 .world-map { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: manipulation; }
+.world-map--europe .continent-labels { display: none; }
 .map-feedback-markers { pointer-events: none; }
 .map-feedback-marker { stroke: #fff; stroke-width: 4; }
 .map-feedback-marker--choice { fill: #e99554; }
@@ -549,6 +550,24 @@ body { background: #f5f4ee; }
   outline: 3px solid rgba(40,96,68,.4);
   outline-offset: 3px;
 }
+.leaderboard { margin-top: 34px; padding: 24px; border: 1px solid #e5ebe1; border-radius: 16px; background: #fbfcf9; }
+.leaderboard-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
+.leaderboard-heading h2 { margin: 4px 0 0; font: 650 26px "Outfit", sans-serif; letter-spacing: -.5px; }
+.leaderboard-heading label { display: flex; align-items: center; gap: 8px; color: #728176; font-size: 11px; font-weight: 700; }
+.leaderboard-area { padding: 9px 28px 9px 11px; border: 1px solid #dfe7dc; border-radius: 8px; background: white; color: #35523e; font: 600 12px "DM Sans", sans-serif; }
+.leaderboard-list { display: grid; gap: 7px; margin: 18px 0 0; padding: 0; list-style: none; counter-reset: leaderboard; }
+.leaderboard-list li { min-height: 42px; display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #e9eee5; border-radius: 9px; background: white; color: #405548; font-size: 12px; counter-increment: leaderboard; }
+.leaderboard-list li::before { content: counter(leaderboard); color: #8b998d; font: 700 13px "Outfit", sans-serif; }
+.leaderboard-list li:first-child::before { content: "🥇"; }
+.leaderboard-list li:nth-child(2)::before { content: "🥈"; }
+.leaderboard-list li:nth-child(3)::before { content: "🥉"; }
+.leaderboard-score { color: #4f7d54; font-weight: 800; }
+.leaderboard-empty { color: #879389; font-size: 12px; }
+.leaderboard-submit { display: flex; align-items: end; justify-content: center; gap: 9px; margin: 14px auto 0; }
+.leaderboard-submit label { display: grid; gap: 5px; color: #728176; font-size: 10px; font-weight: 700; text-align: left; }
+.leaderboard-submit input { width: min(230px, 52vw); min-height: 38px; padding: 8px 10px; border: 1px solid #dfe7dc; border-radius: 8px; background: white; color: #35523e; font: 600 12px "DM Sans", sans-serif; }
+.leaderboard-submit button { min-height: 38px; padding: 8px 13px; border: 0; border-radius: 8px; background: #42734d; color: white; font: 700 11px "DM Sans", sans-serif; cursor: pointer; }
+@media (max-width: 650px) { .leaderboard { margin-top: 22px; padding: 16px; } .leaderboard-heading h2 { font-size: 21px; } .leaderboard-heading label { display: grid; gap: 4px; } .leaderboard-area { min-width: 120px; } .leaderboard-submit { flex-wrap: wrap; } }
 
     </style>
   </head>
@@ -605,27 +624,31 @@ body { background: #f5f4ee; }
           <div><div class="eyebrow section-eyebrow"><span class="eyebrow-dot"></span> LEERGEBIEDEN</div><h2>Kies waar je wilt oefenen</h2></div>
         </div>
         <p class="section-intro">Kies een gebied om een quiz te starten.</p>
-        <div class="game-callout"><span class="game-callout-icon" aria-hidden="true">i</span><span><strong>Twee manieren van oefenen</strong><small>Beantwoord vragen en wijs locaties aan op de wereldkaart.</small></span><span class="game-callout-badge">10 VRAGEN PER RONDE</span></div>
+        <div class="game-callout"><span class="game-callout-icon" aria-hidden="true">i</span><span><strong>Blijf spelen zolang je goed antwoordt</strong><small>Beantwoord vragen en wijs locaties aan op de wereldkaart. Bij een fout eindigt je poging en wordt je score opgeslagen.</small></span><span class="game-callout-badge">400 PER GEBIED</span></div>
         <div class="area-grid">
           <button class="area-card area-netherlands" type="button" data-area="Nederland">
-            <span class="area-icon area-icon--nl" aria-hidden="true">NL</span><span class="area-content"><strong>Nederland</strong><small>Provincies, steden en water</small><span class="area-count">15 vragen beschikbaar</span></span><span class="area-arrow" aria-hidden="true">→</span>
+            <span class="area-icon area-icon--nl" aria-hidden="true">NL</span><span class="area-content"><strong>Nederland</strong><small>Provincies, steden en water</small><span class="area-count">400 vragen in de pool</span></span><span class="area-arrow" aria-hidden="true">→</span>
           </button>
           <button class="area-card area-europe" type="button" data-area="Europa">
-            <span class="area-icon area-icon--eu" aria-hidden="true">EU</span><span class="area-content"><strong>Europa</strong><small>Landen, hoofdsteden en zeeën</small><span class="area-count">41 vragen beschikbaar</span></span><span class="area-arrow" aria-hidden="true">→</span>
+            <span class="area-icon area-icon--eu" aria-hidden="true">EU</span><span class="area-content"><strong>Europa</strong><small>Landen, hoofdsteden en zeeën</small><span class="area-count">400 vragen in de pool</span></span><span class="area-arrow" aria-hidden="true">→</span>
           </button>
           <button class="area-card area-world" type="button" data-area="De wereld">
-            <span class="area-icon area-icon--world" aria-hidden="true">WERELD</span><span class="area-content"><strong>De wereld</strong><small>Landen, hoofdsteden en oceanen</small><span class="area-count">160 vragen beschikbaar</span></span><span class="area-arrow" aria-hidden="true">→</span>
+            <span class="area-icon area-icon--world" aria-hidden="true">WERELD</span><span class="area-content"><strong>De wereld</strong><small>Landen, hoofdsteden en oceanen</small><span class="area-count">400 vragen in de pool</span></span><span class="area-arrow" aria-hidden="true">→</span>
           </button>
         </div>
+        <section class="leaderboard" aria-labelledby="leaderboard-title">
+          <div class="leaderboard-heading"><div><div class="eyebrow section-eyebrow">JOUW SCORES</div><h2 id="leaderboard-title">Leaderboard</h2></div><label>Gebied <select class="leaderboard-area" aria-label="Kies een gebied voor het leaderboard"><option>Nederland</option><option>Europa</option><option>De wereld</option></select></label></div>
+          <ol class="leaderboard-list" aria-live="polite"></ol>
+        </section>
       </section>
 
       <section class="how-section" id="hoe-werkt-het">
         <div class="how-inner">
-          <div class="how-copy"><div class="eyebrow"><span class="eyebrow-dot"></span> ZO WERKT HET</div><h2>Oefen met de kaart.</h2><p>Kies een leergebied en beantwoord tien vragen. Je krijgt meerkeuzevragen en zoekt plaatsen op de kaart.</p><button class="button button-light" type="button" data-start-quiz>Start een quiz <span aria-hidden="true">→</span></button></div>
+          <div class="how-copy"><div class="eyebrow"><span class="eyebrow-dot"></span> ZO WERKT HET</div><h2>Oefen met de kaart.</h2><p>Kies een leergebied en blijf vragen beantwoorden. Bij een fout eindigt je poging en komt je score op het leaderboard.</p><button class="button button-light" type="button" data-start-quiz>Start een quiz <span aria-hidden="true">→</span></button></div>
           <div class="steps">
             <article class="step"><span class="step-number">01</span><div><h3>Kies een gebied</h3><p>Nederland, Europa of de wereld.</p></div></article>
             <article class="step"><span class="step-number">02</span><div><h3>Beantwoord de vragen</h3><p>Kies een antwoord of wijs een plek aan.</p></div></article>
-            <article class="step"><span class="step-number">03</span><div><h3>Bekijk je resultaat</h3><p>Na tien vragen zie je je score.</p></div></article>
+            <article class="step"><span class="step-number">03</span><div><h3>Bekijk je resultaat</h3><p>Bij een fout zie je je resultaat en score.</p></div></article>
           </div>
         </div>
       </section>
@@ -636,7 +659,7 @@ body { background: #f5f4ee; }
       <button class="fullscreen-toggle" type="button" aria-label="Volledig scherm openen" title="Volledig scherm">⛶</button>
       <button class="dialog-close" type="button" aria-label="Quiz sluiten">×</button>
       <div class="quiz-content">
-        <div class="quiz-kicker"><span class="eyebrow-dot"></span><span>TOPOQUIZ <span class="quiz-area-name">NEDERLAND</span></span><label class="map-selector">LEERKAART <select class="game-area-select" aria-label="Kies een kaart om te leren"><option value="Nederland">Nederland</option><option value="Europa">Europa</option><option value="De wereld">De wereld</option></select></label><span class="quiz-mix-label">BOOGSCHIETEN + WERELDKAART</span><span class="quiz-progress-label">1 / 10</span></div>
+        <div class="quiz-kicker"><span class="eyebrow-dot"></span><span>TOPOQUIZ <span class="quiz-area-name">NEDERLAND</span></span><label class="map-selector">LEERKAART <select class="game-area-select" aria-label="Kies een kaart om te leren"><option value="Nederland">Nederland</option><option value="Europa">Europa</option><option value="De wereld">De wereld</option></select></label><span class="quiz-mix-label">BOOGSCHIETEN + WERELDKAART</span><span class="quiz-progress-label">Vraag 1</span></div>
         <div class="game-stats" aria-label="Spelstatistieken">
           <div class="game-stat"><span class="game-stat-icon">⭐</span><span><small>PUNTEN</small><strong class="game-points">0</strong></span></div>
           <div class="game-stat"><span class="game-stat-icon">🔥</span><span><small>REEKS</small><strong class="game-streak">0x</strong></span></div>
@@ -707,7 +730,21 @@ const questions = {
     vraag("Welke rivier stroomt door Maastricht?", "De Maas", ["De Rijn", "De Waal", "De Lek"], "De rivier loopt ook door Luik."),
     vraag("In welke provincie ligt de stad Zwolle?", "Overijssel", ["Gelderland", "Drenthe", "Flevoland"], "Het is de hoofdstad van deze provincie."),
     vraag("Wat is de hoofdstad van Groningen?", "Groningen", ["Delfzijl", "Veendam", "Stadskanaal"], "De provincie en de hoofdstad hebben dezelfde naam."),
-    vraag("Welke stad ligt op het eiland Walcheren?", "Middelburg", ["Dordrecht", "Hoorn", "Alkmaar"], "Het is ook de hoofdstad van Zeeland.")
+    vraag("Welke stad ligt op het eiland Walcheren?", "Middelburg", ["Dordrecht", "Hoorn", "Alkmaar"], "Het is ook de hoofdstad van Zeeland."),
+    vraag("Wat is de hoofdstad van Noord-Holland?", "Haarlem", ["Amsterdam", "Alkmaar", "Hoorn"], "Amsterdam ligt ook in deze provincie, maar is niet de provinciehoofdstad."),
+    vraag("Wat is de hoofdstad van Zuid-Holland?", "Den Haag", ["Rotterdam", "Leiden", "Delft"], "De regering en het parlement zitten hier."),
+    vraag("Wat is de hoofdstad van Gelderland?", "Arnhem", ["Nijmegen", "Apeldoorn", "Ede"], "Deze stad ligt aan de Nederrijn."),
+    vraag("Wat is de hoofdstad van Flevoland?", "Lelystad", ["Almere", "Dronten", "Emmeloord"], "Deze stad is vernoemd naar Cornelis Lely."),
+    vraag("Welke provincie heeft Utrecht als hoofdstad?", "Utrecht", ["Gelderland", "Overijssel", "Noord-Holland"], "De provincie en haar hoofdstad delen hun naam."),
+    vraag("Welke twee provincies verbindt de Afsluitdijk?", "Noord-Holland en Friesland", ["Friesland en Groningen", "Flevoland en Gelderland", "Zeeland en Zuid-Holland"], "De dijk loopt tussen Den Oever en Kornwerderzand."),
+    vraag("In welke provincie ligt Nationaal Park De Hoge Veluwe?", "Gelderland", ["Drenthe", "Limburg", "Noord-Brabant"], "Arnhem ligt vlak bij dit nationale park."),
+    vraag("In welke provincie ligt Enschede?", "Overijssel", ["Gelderland", "Drenthe", "Flevoland"], "Deze stad ligt dicht bij de Duitse grens."),
+    vraag("Welk groot meer ligt tussen Noord-Holland en Friesland?", "Het IJsselmeer", ["Het Markermeer", "Het Veerse Meer", "Het Grevelingenmeer"], "De Afsluitdijk scheidt dit meer van de Waddenzee."),
+    vraag("In welke provincie ligt Giethoorn?", "Overijssel", ["Friesland", "Drenthe", "Gelderland"], "Het dorp ligt in Nationaal Park Weerribben-Wieden."),
+    vraag("Welke Waddeneiland ligt bij Friesland?", "Terschelling", ["Texel", "Goeree-Overflakkee", "Walcheren"], "Harlingen is de veerhaven naar dit eiland."),
+    vraag("Welke rivier stroomt langs Arnhem?", "De Nederrijn", ["De Maas", "De Eems", "De Vecht"], "Dit is een zijtak van de Rijn."),
+    vraag("In welke provincie ligt de Zaanse Schans?", "Noord-Holland", ["Zuid-Holland", "Friesland", "Utrecht"], "Deze plek met molens ligt bij Zaandam."),
+    vraag("Welke stad is de grootste zeehaven van Nederland?", "Rotterdam", ["Amsterdam", "Den Haag", "Vlissingen"], "De haven ligt aan de Nieuwe Maas.")
   ],
   Europa: [
     vraag("Wat is de hoofdstad van Frankrijk?", "Parijs", ["Lyon", "Marseille", "Nice"], "De Eiffeltoren staat in deze stad."),
@@ -765,6 +802,23 @@ const questions = {
     vraag("Wat is de hoofdstad van Australië?", "Canberra", ["Sydney", "Melbourne", "Perth"], "Deze stad ligt tussen Sydney en Melbourne.")
   ]
 };
+
+const dutchCityProvinceFacts = [
+  ["Leeuwarden", "Friesland"], ["Assen", "Drenthe"], ["Groningen", "Groningen"],
+  ["Zwolle", "Overijssel"], ["Arnhem", "Gelderland"], ["Utrecht", "Utrecht"],
+  ["Haarlem", "Noord-Holland"], ["Den Haag", "Zuid-Holland"],
+  ["Middelburg", "Zeeland"], ["Den Bosch", "Noord-Brabant"],
+  ["Lelystad", "Flevoland"], ["Maastricht", "Limburg"],
+  ["Enschede", "Overijssel"], ["Eindhoven", "Noord-Brabant"],
+  ["Alkmaar", "Noord-Holland"], ["Nijmegen", "Gelderland"]
+];
+const dutchProvinces = [...new Set(dutchCityProvinceFacts.map(([, province]) => province))];
+questions.Nederland.push(...dutchCityProvinceFacts.map(([city, province]) => vraag(
+  `In welke provincie ligt ${city}?`,
+  province,
+  shuffled(dutchProvinces.filter((answer) => answer !== province)).slice(0, 3),
+  `Zoek ${city} op de kaart van Nederland.`
+)));
 
 const extraCapitalQuestions = [
   ["Afghanistan", "Kabul"],
@@ -935,33 +989,163 @@ questions["De wereld"].push(...extraCapitalQuestions.map(([country, capital]) =>
     `Zoek ${country} op de kaart en ontdek waar de hoofdstad ligt.`
   );
 }));
+questions["De wereld"].push(...extraCapitalQuestions.slice(0, 56).map(([country, capital]) => {
+  const wrongAnswers = shuffled(extraCapitals.filter((answer) => answer !== capital)).slice(0, 3);
+  return vraag(
+    `Welke hoofdstad hoort bij ${country}?`,
+    capital,
+    wrongAnswers,
+    `Zoek ${country} op de wereldkaart en onthoud de hoofdstad.`
+  );
+}));
 
-const mapLocations = [
-  { place: "Nederland", x: 558, y: 238, hint: "In Noordwest-Europa, aan de Noordzee." },
-  { place: "Canada", x: 220, y: 198, hint: "In Noord-Amerika, boven de Verenigde Staten." },
-  { place: "Brazilië", x: 358, y: 456, hint: "Het grootste land van Zuid-Amerika." },
-  { place: "Japan", x: 884, y: 303, hint: "Een eilandengroep ten oosten van China en Korea." },
-  { place: "Egypte", x: 614, y: 364, hint: "In Noordoost-Afrika, bij de Middellandse Zee." },
-  { place: "India", x: 712, y: 364, hint: "Een groot land in Zuid-Azië." },
-  { place: "Australië", x: 863, y: 490, hint: "Een eilandcontinent ten zuidoosten van Azië." },
-  { place: "Mexico", x: 269, y: 349, hint: "Ten zuiden van de Verenigde Staten." },
-  { place: "Zuid-Afrika", x: 569, y: 518, hint: "Helemaal in het zuiden van Afrika." },
-  { place: "Noorwegen", x: 509, y: 202, hint: "Een lang land in het noorden van Europa." },
-  { place: "Spanje", x: 491, y: 260, hint: "In het zuidwesten van Europa." },
-  { place: "Argentinië", x: 312, y: 540, hint: "Een lang land aan de zuidkant van Zuid-Amerika." },
-  { place: "China", x: 776, y: 319, hint: "Een enorm land in Oost-Azië." },
-  { place: "Madagaskar", x: 626, y: 476, hint: "Een groot eiland voor de zuidoostkust van Afrika." },
-  { place: "Nieuw-Zeeland", x: 978, y: 557, hint: "Eilanden ten zuidoosten van Australië." },
-  { place: "Kenia", x: 590, y: 421, hint: "In Oost-Afrika, bij de evenaar." },
-  { place: "Verenigde Staten", x: 229, y: 303, hint: "In Noord-Amerika, ten zuiden van Canada." },
-  { place: "Italië", x: 557, y: 281, hint: "Het laarsvormige land in Zuid-Europa." },
-  { place: "Indonesië", x: 816, y: 435, hint: "Een uitgestrekte eilandengroep tussen Azië en Australië." },
-  { place: "Peru", x: 278, y: 411, hint: "Aan de westkant van Zuid-Amerika." }
+const mapWidth = 1043;
+const mapHeight = 681;
+const europeanCountries = new Set([
+  "België", "Denemarken", "Duitsland", "Finland", "Frankrijk", "Griekenland",
+  "Italië", "Nederland", "Noorwegen", "Oostenrijk", "Polen", "Portugal",
+  "Rusland", "Spanje", "Turkije", "Oekraïne", "Verenigd Koninkrijk", "Zweden",
+  "Zwitserland"
+]);
+const europeanCapitalPairs = [
+  ["België", "Brussel"], ["Denemarken", "Kopenhagen"], ["Duitsland", "Berlijn"],
+  ["Finland", "Helsinki"], ["Frankrijk", "Parijs"], ["Griekenland", "Athene"],
+  ["Italië", "Rome"], ["Nederland", "Amsterdam"], ["Noorwegen", "Oslo"],
+  ["Oostenrijk", "Wenen"], ["Polen", "Warschau"], ["Portugal", "Lissabon"],
+  ["Rusland", "Moskou"], ["Spanje", "Madrid"], ["Turkije", "Ankara"],
+  ["Oekraïne", "Kyiv"], ["Verenigd Koninkrijk", "Londen"], ["Zweden", "Stockholm"],
+  ["Zwitserland", "Bern"], ["Albanië", "Tirana"], ["Belarus", "Minsk"],
+  ["Bosnië en Herzegovina", "Sarajevo"], ["Bulgarije", "Sofia"], ["Kroatië", "Zagreb"],
+  ["Cyprus", "Nicosia"], ["Tsjechië", "Praag"], ["Estland", "Tallinn"],
+  ["Hongarije", "Boedapest"], ["IJsland", "Reykjavik"], ["Ierland", "Dublin"],
+  ["Letland", "Riga"], ["Liechtenstein", "Vaduz"], ["Litouwen", "Vilnius"],
+  ["Luxemburg", "Luxemburg"], ["Malta", "Valletta"], ["Moldavië", "Chișinău"],
+  ["Monaco", "Monaco"], ["Montenegro", "Podgorica"], ["Noord-Macedonië", "Skopje"],
+  ["Roemenië", "Boekarest"]
 ];
+const europeanCapitals = europeanCapitalPairs.map(([, capital]) => capital);
+questions.Europa.push(...europeanCapitalPairs.map(([country, capital]) => vraag(
+  `Welke stad is de hoofdstad van ${country}?`,
+  capital,
+  shuffled(europeanCapitals.filter((answer) => answer !== capital)).slice(0, 3),
+  `Zoek ${country} op de kaart van Europa.`
+)));
+const mapLocations = [
+  ["Afghanistan", "Kabul", 34.53, 69.17],
+  ["Argentinië", "Buenos Aires", -34.61, -58.38],
+  ["Australië", "Canberra", -35.28, 149.13],
+  ["België", "Brussel", 50.85, 4.35],
+  ["Brazilië", "Brasília", -15.78, -47.93],
+  ["Canada", "Ottawa", 45.42, -75.70],
+  ["China", "Beijing", 39.90, 116.41],
+  ["Colombia", "Bogotá", 4.61, -74.08],
+  ["Denemarken", "Kopenhagen", 55.68, 12.57],
+  ["Duitsland", "Berlijn", 52.52, 13.40],
+  ["Egypte", "Caïro", 30.05, 31.25],
+  ["Finland", "Helsinki", 60.17, 24.94],
+  ["Frankrijk", "Parijs", 48.86, 2.35],
+  ["Griekenland", "Athene", 37.98, 23.73],
+  ["India", "New Delhi", 28.61, 77.21],
+  ["Indonesië", "Jakarta", -6.18, 106.83],
+  ["Italië", "Rome", 41.89, 12.51],
+  ["Japan", "Tokio", 35.68, 139.69],
+  ["Kenia", "Nairobi", -1.29, 36.82],
+  ["Marokko", "Rabat", 34.02, -6.83],
+  ["Mexico", "Mexico-Stad", 19.43, -99.13],
+  ["Nederland", "Amsterdam", 52.37, 4.89],
+  ["Nieuw-Zeeland", "Wellington", -41.29, 174.78],
+  ["Noorwegen", "Oslo", 59.91, 10.75],
+  ["Oostenrijk", "Wenen", 48.21, 16.37],
+  ["Polen", "Warschau", 52.23, 21.01],
+  ["Portugal", "Lissabon", 38.72, -9.14],
+  ["Rusland", "Moskou", 55.75, 37.62],
+  ["Saoedi-Arabië", "Riyad", 24.71, 46.68],
+  ["Spanje", "Madrid", 40.42, -3.70],
+  ["Suriname", "Paramaribo", 5.85, -55.20],
+  ["Turkije", "Ankara", 39.93, 32.85],
+  ["Oekraïne", "Kyiv", 50.45, 30.52],
+  ["Verenigd Koninkrijk", "Londen", 51.51, -0.13],
+  ["Verenigde Staten", "Washington D.C.", 38.90, -77.04],
+  ["Zuid-Afrika", "Pretoria", -25.74, 28.19],
+  ["Zweden", "Stockholm", 59.33, 18.06],
+  ["Zwitserland", "Bern", 46.95, 7.45]
+].map(([country, place, latitude, longitude]) => {
+  const latitudeBands = [0, .062, .124, .186, .248, .31, .372, .434, .4958, .5571, .6176, .6769, .7346, .7903, .8435, .8936, .9394, .9761, 1];
+  const longitudeBands = [1, .9986, .9954, .99, .9822, .973, .96, .9427, .9216, .8962, .8679, .835, .7986, .7597, .7186, .6732, .6213, .5722, .5322];
+  const band = Math.min(18, Math.abs(latitude) / 5);
+  const lowerBand = Math.floor(band);
+  const upperBand = Math.min(18, lowerBand + 1);
+  const fraction = band - lowerBand;
+  const yFactor = latitudeBands[lowerBand] + (latitudeBands[upperBand] - latitudeBands[lowerBand]) * fraction;
+  const xFactor = longitudeBands[lowerBand] + (longitudeBands[upperBand] - longitudeBands[lowerBand]) * fraction;
+  return {
+    country,
+    place,
+    x: mapWidth / 2 + longitude * (mapWidth / 360) * xFactor,
+    y: mapHeight / 2 - Math.sign(latitude) * yFactor * (mapHeight / 2),
+    hint: `Dit is de hoofdstad van ${country}.`
+  };
+});
 
-const ROUND_LENGTH = 10;
+const CUSTOM_QUESTIONS_KEY = "topowereld-custom-questions-v1";
+const customQuestionLimits = { Nederland: 354, Europa: 300, "De wereld": 146 };
+function readCustomQuestions() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CUSTOM_QUESTIONS_KEY) || "[]");
+    return Array.isArray(saved) ? saved : [];
+  } catch (error) {
+    console.warn("Eigen vragen konden niet worden gelezen.", error);
+    return [];
+  }
+}
+const savedCustomQuestions = readCustomQuestions();
+for (const area of Object.keys(customQuestionLimits)) {
+  savedCustomQuestions
+    .filter((item) => item.area === area && typeof item.question === "string"
+      && Array.isArray(item.answers) && item.answers.length === 4
+      && Number.isInteger(item.correct) && item.correct >= 0 && item.correct < 4)
+    .slice(0, customQuestionLimits[area])
+    .forEach((item) => questions[area].push({
+      question: item.question,
+      answers: item.answers.map(String),
+      correct: item.correct,
+      hint: typeof item.hint === "string" ? item.hint : "Denk na over de kaart."
+    }));
+}
+
+const questionRephrasings = [
+  "Beantwoord deze topografievraag:",
+  "Welke optie beantwoordt de vraag:",
+  "Test je topografiekennis:",
+  "Kies het juiste antwoord voor:",
+  "Geografische uitdaging:",
+  "Welke keuze hoort bij deze vraag?",
+  "Denk goed na en beantwoord:",
+  "Wat is het juiste antwoord op de vraag:"
+];
+const questionPoolTargets = { Nederland: 400, Europa: 400, "De wereld": 400 };
+for (const [area, targetTotal] of Object.entries(questionPoolTargets)) {
+  const mapCount = area === "Nederland" ? 0 : mapLocations
+    .filter((location) => area !== "Europa" || europeanCountries.has(location.country)).length;
+  const targetQuestionCount = targetTotal - mapCount;
+  const sourceQuestions = [...questions[area]];
+  for (let index = questions[area].length; index < targetQuestionCount; index += 1) {
+    const addedIndex = index - sourceQuestions.length;
+    const source = sourceQuestions[addedIndex % sourceQuestions.length];
+    const phrasing = questionRephrasings[Math.floor(addedIndex / sourceQuestions.length) % questionRephrasings.length];
+    const answers = shuffled(source.answers);
+    questions[area].push({
+      ...source,
+      question: `${phrasing} ${source.question}`,
+      answers,
+      correct: answers.indexOf(source.answers[source.correct])
+    });
+  }
+}
+
 const QUESTION_TIME = 15;
 const STORAGE_KEY = "topowereld-records-v1";
+const LEADERBOARD_KEY = "topowereld-leaderboard-v1";
 const dialog = document.querySelector(".quiz-dialog");
 const fullscreenButton = document.querySelector(".fullscreen-toggle");
 const areaSelect = document.querySelector(".game-area-select");
@@ -997,6 +1181,65 @@ let timerId = null;
 let shotTimerId = null;
 let aimTargetIndex = 0;
 let records = readRecords();
+let leaderboard = readLeaderboard();
+
+const leaderboardArea = document.querySelector(".leaderboard-area");
+const leaderboardList = document.querySelector(".leaderboard-list");
+
+function readLeaderboard() {
+  try {
+    const entries = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+    return Array.isArray(entries) ? entries : [];
+  } catch (error) {
+    console.warn("Het leaderboard kon niet worden gelezen.", error);
+    return [];
+  }
+}
+
+function renderLeaderboard() {
+  if (!leaderboardList || !leaderboardArea) return;
+  leaderboardList.replaceChildren();
+  const entries = leaderboard
+    .filter((entry) => entry.area === leaderboardArea.value)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+  if (entries.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "leaderboard-empty";
+    empty.textContent = "Nog geen scores. Speel een quiz en zet je score op het bord.";
+    leaderboardList.append(empty);
+    return;
+  }
+  entries.forEach((entry) => {
+    const row = document.createElement("li");
+    const name = document.createElement("span");
+    const points = document.createElement("strong");
+    name.textContent = entry.name;
+    points.className = "leaderboard-score";
+    points.textContent = `${entry.score} punten`;
+    row.append(name, points);
+    leaderboardList.append(row);
+  });
+}
+
+function saveLeaderboardScore(name, entryId) {
+  const savedEntry = leaderboard.find((entry) => entry.id === entryId);
+  if (savedEntry) savedEntry.name = name.trim().slice(0, 24) || "Speler";
+  else leaderboard.push({ id: entryId, area: activeArea, name: name.trim().slice(0, 24) || "Speler", score });
+  leaderboard = leaderboard.filter((entry) => entry.area === activeArea)
+    .sort((a, b) => b.score - a.score).slice(0, 10)
+    .concat(leaderboard.filter((entry) => entry.area !== activeArea));
+  try {
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+  } catch (error) {
+    console.warn("Je score kon niet worden bewaard.", error);
+  }
+  leaderboardArea.value = activeArea;
+  renderLeaderboard();
+}
+
+leaderboardArea?.addEventListener("change", renderLeaderboard);
+renderLeaderboard();
 
 function readRecords() {
   try {
@@ -1015,6 +1258,17 @@ function saveRecord(area, value) {
     console.warn("Je record kon niet worden bewaard.", error);
   }
 }
+
+window.addEventListener("storage", (event) => {
+  if (event.key === LEADERBOARD_KEY) {
+    leaderboard = readLeaderboard();
+    renderLeaderboard();
+  }
+  if (event.key === STORAGE_KEY) {
+    records = readRecords();
+    updateGameStats();
+  }
+});
 
 function shuffled(items) {
   const copy = [...items];
@@ -1050,37 +1304,15 @@ function startQuestionTimer() {
 
 function handleTimeout() {
   if (answered) return;
-
   answered = true;
-  if (roundQuestions[questionIndex].type === "map") {
-    showMapMarker(roundQuestions[questionIndex], "answer");
-    hintButton.disabled = true;
-    streak = 0;
-    feedback.textContent = `Tijd op! ${roundQuestions[questionIndex].place} stond op de kaart aangegeven.`;
-    feedback.classList.add("wrong");
-    updateGameStats();
-    nextButton.disabled = false;
-    nextButton.innerHTML = questionIndex === ROUND_LENGTH - 1
-      ? 'Bekijk je prijs <span aria-hidden="true">🏆</span>'
-      : 'Volgende vraag <span aria-hidden="true">→</span>';
-    return;
-  }
-
   const question = roundQuestions[questionIndex];
-  const options = [...answerList.children];
-  options.forEach((option, index) => {
-    option.disabled = true;
-    if (index === question.correct) option.classList.add("correct");
-  });
+  if (question.type === "map") showMapMarker(question, "answer");
+  else answerList.children[question.correct]?.classList.add("correct");
   hintButton.disabled = true;
   streak = 0;
-  feedback.textContent = `Tijd op! Het juiste antwoord was ${question.answers[question.correct]}.`;
-  feedback.classList.add("wrong");
   updateGameStats();
-  nextButton.disabled = false;
-  nextButton.innerHTML = questionIndex === ROUND_LENGTH - 1
-    ? 'Bekijk je prijs <span aria-hidden="true">🏆</span>'
-    : 'Volgende vraag <span aria-hidden="true">→</span>';
+  const answer = question.type === "map" ? question.place : question.answers[question.correct];
+  showResult(`Tijd om! Het juiste antwoord was ${answer}.`, question.type === "map");
 }
 
 function renderQuestion() {
@@ -1094,8 +1326,8 @@ function renderQuestion() {
     ? `Kaartvraag · zoek ${question.place} op de wereldkaart`
     : `Boogschietvraag · op ontdekking in ${activeArea}`;
   areaName.textContent = activeArea.toUpperCase();
-  progressLabel.textContent = `${questionIndex + 1} / ${ROUND_LENGTH}`;
-  progressFill.style.width = `${(questionIndex / ROUND_LENGTH) * 100}%`;
+  progressLabel.textContent = `Vraag ${correctAnswers + 1}`;
+  progressFill.style.width = `${(questionIndex / roundQuestions.length) * 100}%`;
   feedback.textContent = "";
   feedback.classList.remove("wrong");
   nextButton.disabled = true;
@@ -1167,15 +1399,13 @@ function chooseMapLocation(event) {
   } else {
     streak = 0;
     showMapMarker(question, "answer");
-    feedback.textContent = `Nog niet helemaal. ${question.place} staat op de kaart aangegeven.`;
-    feedback.classList.add("wrong");
+    showResult(`Fout antwoord. De juiste plek is ${question.place}.`, true);
+    return;
   }
 
   updateGameStats();
   nextButton.disabled = false;
-  nextButton.innerHTML = questionIndex === ROUND_LENGTH - 1
-    ? 'Bekijk je prijs <span aria-hidden="true">🏆</span>'
-    : 'Volgende vraag <span aria-hidden="true">→</span>';
+  nextButton.innerHTML = 'Volgende vraag';
 }
 
 worldMap.addEventListener("click", chooseMapLocation);
@@ -1263,43 +1493,77 @@ function finishShot(selected, button) {
   } else {
     streak = 0;
     button.classList.add("incorrect");
-    feedback.textContent = `Nog niet helemaal. Het goede antwoord is ${question.answers[question.correct]}.`;
-    feedback.classList.add("wrong");
+    showResult(`Fout antwoord. Het goede antwoord is ${question.answers[question.correct]}.`);
+    return;
   }
   updateGameStats();
   nextButton.disabled = false;
-  nextButton.innerHTML = questionIndex === ROUND_LENGTH - 1
-    ? 'Bekijk je prijs <span aria-hidden="true">🏆</span>'
-    : 'Volgende vraag <span aria-hidden="true">→</span>';
+  nextButton.innerHTML = 'Volgende vraag';
 }
 
-function showResult() {
+function showResult(reason = "", showCorrectMapLocation = false) {
   clearInterval(timerId);
   arena.hidden = true;
-  mapArena.hidden = true;
+  mapArena.hidden = !showCorrectMapLocation;
   progressFill.style.width = "100%";
   progressLabel.textContent = "Klaar!";
   const oldRecord = records[activeArea] || 0;
   const newRecord = score > oldRecord;
   saveRecord(activeArea, score);
   const message = newRecord
-    ? "Nieuw record! Wat een geweldige ontdekkingsreiziger ben jij."
-    : score >= 750
-      ? "Fantastisch gespeeld! Jij kent de kaart op je duimpje."
-      : "Goed geoefend! Elke ronde ontdek je weer iets nieuws.";
-  questionTitle.textContent = newRecord ? "Een nieuw record!" : "Jouw ontdekkingstocht zit erop!";
+    ? "Nieuw record! Je score is opgeslagen."
+    : "Je score is opgeslagen. Probeer het nog eens en kijk of je verder komt.";
+  questionTitle.textContent = newRecord ? "Nieuw record!" : "Poging voorbij";
   quizPrompt.textContent = `Je avontuur in ${activeArea}`;
   answerList.replaceChildren();
-  const medal = score >= 900 ? "🥇" : score >= 600 ? "🥈" : score >= 300 ? "🥉" : "❌";
+  const medal = score >= 900 ? "🥇" : score >= 600 ? "🥈" : score >= 300 ? "🥉" : "🌱";
   feedback.classList.remove("wrong");
-  feedback.innerHTML = `<div class="quiz-result-medal">${medal}</div><div class="quiz-result-score">${score}<small>punten verdiend</small></div><p class="quiz-result-message">${message}<br>Langste reeks: ${bestStreak} goed achter elkaar.</p>`;
+  const entryId = `score-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  saveLeaderboardScore("Speler", entryId);
+  feedback.innerHTML = `<div class="quiz-result-medal">${medal}</div><div class="quiz-result-score">${score}<small>punten verdiend</small></div><p class="quiz-result-message">${reason ? `${reason}<br>` : ""}${message}<br>Reeks: ${bestStreak} goed achter elkaar. De score staat op het leaderboard als Speler.</p><form class="leaderboard-submit"><label>Pas je naam aan<input name="playerName" maxlength="24" value="Speler" required></label><button type="submit">Naam opslaan</button></form>`;
+  feedback.querySelector(".leaderboard-submit").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    saveLeaderboardScore(form.elements.playerName.value, entryId);
+    form.querySelector("button").textContent = "Naam bijgewerkt";
+    form.querySelector("button").disabled = true;
+  });
   nextButton.disabled = false;
   nextButton.hidden = false;
   nextButton.innerHTML = 'Nog een keer spelen <span aria-hidden="true">↻</span>';
   nextButton.dataset.restart = "true";
   hintButton.hidden = true;
   updateGameStats();
-  feedback.insertAdjacentHTML("beforeend", `<p class="quiz-result-accuracy">${correctAnswers} van de ${ROUND_LENGTH} vragen goed beantwoord.</p>`);
+  feedback.insertAdjacentHTML("beforeend", `<p class="quiz-result-accuracy">Je beantwoordde ${correctAnswers} vragen goed.</p>`);
+}
+
+function buildQuestionDeck(area) {
+  const answerQuestions = shuffled(questions[area]).map((question) => {
+    const answers = shuffled(question.answers);
+    return {
+      ...question,
+      type: "archery",
+      answers,
+      correct: answers.indexOf(question.answers[question.correct])
+    };
+  });
+  const mapQuestions = area === "Nederland" ? [] : shuffled(mapLocations)
+    .filter((location) => area !== "Europa" || europeanCountries.has(location.country))
+    .map((location) => ({
+      ...location,
+      type: "map",
+      question: `Waar ligt ${location.place}, de hoofdstad van ${location.country}?`,
+      hint: location.hint
+    }));
+
+  const deck = [];
+  let alternate = Math.random() < 0.5;
+  while (answerQuestions.length || mapQuestions.length) {
+    if (mapQuestions.length && (!answerQuestions.length || alternate)) deck.push(mapQuestions.pop());
+    else deck.push(answerQuestions.pop());
+    alternate = !alternate;
+  }
+  return deck;
 }
 
 function startQuiz(area = "Nederland") {
@@ -1307,31 +1571,10 @@ function startQuiz(area = "Nederland") {
   clearTimeout(shotTimerId);
   activeArea = questions[area] ? area : "Nederland";
   areaSelect.value = activeArea;
-  const answerQuestions = shuffled(questions[activeArea])
-    .slice(0, ROUND_LENGTH / 2)
-    .map((question) => {
-      const answers = shuffled(question.answers);
-      return {
-        ...question,
-        type: "archery",
-        answers,
-        correct: answers.indexOf(question.answers[question.correct])
-      };
-    });
-  const mapQuestions = shuffled(mapLocations)
-    .slice(0, ROUND_LENGTH / 2)
-    .map((location) => ({
-      ...location,
-      type: "map",
-      question: `Waar ligt ${location.place} op de wereldkaart?`,
-      hint: location.hint
-    }));
-  const startsWithMap = Math.random() < 0.5;
-  roundQuestions = Array.from({ length: ROUND_LENGTH }, (_, index) => (
-    index % 2 === (startsWithMap ? 0 : 1)
-      ? mapQuestions[Math.floor(index / 2)]
-      : answerQuestions[Math.floor(index / 2)]
-  ));
+  const isEuropeQuiz = activeArea === "Europa";
+  worldMap.setAttribute("viewBox", isEuropeQuiz ? "420 20 330 320" : "0 0 1043 681");
+  worldMap.classList.toggle("world-map--europe", isEuropeQuiz);
+  roundQuestions = buildQuestionDeck(activeArea);
   questionIndex = 0;
   score = 0;
   streak = 0;
@@ -1358,11 +1601,17 @@ areaSelect.addEventListener("change", () => startQuiz(areaSelect.value));
 nextButton.addEventListener("click", () => {
   if (nextButton.dataset.restart) {
     startQuiz(activeArea);
-  } else if (questionIndex < ROUND_LENGTH - 1) {
-    questionIndex += 1;
-    renderQuestion();
   } else {
-    showResult();
+    questionIndex += 1;
+    if (questionIndex >= roundQuestions.length) {
+      const previousQuestion = roundQuestions[roundQuestions.length - 1]?.question;
+      roundQuestions = buildQuestionDeck(activeArea);
+      if (roundQuestions.length > 1 && roundQuestions[0].question === previousQuestion) {
+        [roundQuestions[0], roundQuestions[1]] = [roundQuestions[1], roundQuestions[0]];
+      }
+      questionIndex = 0;
+    }
+    renderQuestion();
   }
 });
 hintButton.addEventListener("click", () => {
