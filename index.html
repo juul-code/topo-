@@ -1290,7 +1290,7 @@ function showResult() {
   questionTitle.textContent = newRecord ? "Een nieuw record!" : "Jouw ontdekkingstocht zit erop!";
   quizPrompt.textContent = `Je avontuur in ${activeArea}`;
   answerList.replaceChildren();
-  const medal = score >= 900 ? "🥇" : score >= 600 ? "🥈" : score >= 300 ? "🥉" : "🌱";
+  const medal = score >= 900 ? "🥇" : score >= 600 ? "🥈" : score >= 300 ? "🥉" : "❌";
   feedback.classList.remove("wrong");
   feedback.innerHTML = `<div class="quiz-result-medal">${medal}</div><div class="quiz-result-score">${score}<small>punten verdiend</small></div><p class="quiz-result-message">${message}<br>Langste reeks: ${bestStreak} goed achter elkaar.</p>`;
   nextButton.disabled = false;
