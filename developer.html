@@ -1,0 +1,85 @@
+Warning: truncated output (original token count: 6276)
+Total output lines: 476
+
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Beheer | TopoWereld</title>
+  <style>
+    :root { color-scheme: light; --green:#315c3e; --ink:#26372d; --muted:#718076; --line:#e1e8de; --paper:#f5f7f1; --white:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.5 "Segoe UI",Arial,sans-serif; }
+    header { padding:28px max(22px,calc((100vw - 1080px)/2)); background:#fff; border-bottom:1px solid var(--line); }
+    header a { color:var(--green); text-decoration:none; font-weight:700; }
+    main { width:min(1080px,calc(100% - 32px)); margin:32px auto 64px; }
+    h1,h2 { margin:0; color:#294535; letter-spacing:-.03em; }
+    h1 { margin-top:12px; font-size:clamp(30px,5vw,44px); }
+    h2 { font-size:24px; }
+    .intro,.subtle { color:var(--muted); }
+    .intro { margin:8px 0 24px; }
+    .notice { min-height:24px; margin:12px 0; color:#376a43; font-weight:650; }
+    #admin-content[hidden], #auth-panel[hidden], .auth-box form[hidden] { display:none !important; }
+    .auth-box { max-width:520px; }
+    .auth-box form { display:grid; gap:13px; }
+    .security-note { margin:16px 0 0; padding:11px 12px; border-radius:8px; background:#f4f7f1; color:#68786d; font-size:11px; }
+    .lock-button { margin-left:auto; }
+    .panel { margin-top:22px; padding:24px; border:1px solid var(--line); border-radius:16px; background:var(--white); box-shadow:0 5px 18px #243c2b0a; }
+    .panel-heading { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:16px; }
+    .field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+    label { display:grid; gap:6px; color:#58685d; font-size:12px; font-weight:700; }
+    input,select,textarea { width:100%; min-height:42px; padding:10px 11px; border:1px solid #dce5d9; border-radius:8px; b…5276 tokens truncated…Element("input");
+        points.type = "number";
+        points.min = "0";
+        points.max = "999999";
+        points.step = "1";
+        points.value = Number(entry.score) || 0;
+        scoreLabel.append(points);
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "primary";
+        save.textContent = "Opslaan";
+        save.addEventListener("click", () => {
+          const value = Math.floor(Number(points.value));
+          if (!name.value.trim() || !Number.isFinite(value) || value < 0) {
+            announce("Vul een naam en een geldig puntenaantal in.", true);
+            return;
+          }
+          entry.name = name.value.trim().slice(0, 24);
+          entry.area = select.value;
+          entry.score = value;
+          saveScores();
+        });
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "danger";
+        remove.textContent = "Verwijderen";
+        remove.addEventListener("click", () => {
+          scores = scores.filter((score) => score.id !== entry.id);
+          saveScores();
+        });
+        actions.append(save, remove);
+        row.append(nameLabel, areaLabel, scoreLabel, actions);
+        leaderboardList.append(row);
+      });
+    }
+    leaderboardFilter.addEventListener("change", renderScores);
+    document.querySelector("#reset-leaderboard").addEventListener("click", () => {
+      if (!confirm("Alle leaderboard-scores en quizrecords wissen?")) return;
+      scores = [];
+      saveScores();
+    });
+    window.addEventListener("storage", (event) => {
+      if (event.key === QUESTION_KEY) { questions = readArray(QUESTION_KEY); renderQuestions(); }
+      if (event.key === LEADERBOARD_KEY) { scores = readArray(LEADERBOARD_KEY); renderScores(); }
+    });
+    renderQuestions();
+    renderScores();
+  </script>
+</body>
+</html>
+
