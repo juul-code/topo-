@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 6276)
-Total output lines: 476
-
 <!doctype html>
 <html lang="nl">
 <head>
@@ -30,7 +27,401 @@ Total output lines: 476
     .panel-heading { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:16px; }
     .field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
     label { display:grid; gap:6px; color:#58685d; font-size:12px; font-weight:700; }
-    input,select,textarea { width:100%; min-height:42px; padding:10px 11px; border:1px solid #dce5d9; border-radius:8px; b…5276 tokens truncated…Element("input");
+    input,select,textarea { width:100%; min-height:42px; padding:10px 11px; border:1px solid #dce5d9; border-radius:8px; background:#fff; color:var(--ink); font:inherit; }
+    textarea { min-height:76px; resize:vertical; }
+    input:focus,select:focus,textarea:focus { outline:3px solid #6f9a7030; border-color:#7da47e; }
+    .full { grid-column:1/-1; }
+    .buttons { display:flex; flex-wrap:wrap; gap:9px; margin-top:15px; }
+    button { min-height:40px; padding:9px 14px; border:1px solid #dbe4d8; border-radius:8px; background:#f7f9f5; color:#395243; font:700 12px inherit; cursor:pointer; }
+    button:hover { background:#edf4e9; }
+    button.primary { border-color:var(--green); background:var(--green); color:white; }
+    button.primary:hover { background:#244a31; }
+    button.danger { border-color:#f0d6ce; background:#fff7f4; color:#a14f3c; }
+    .list { display:grid; gap:9px; margin-top:15px; }
+    .question-row,.score-row { padding:13px; border:1px solid var(--line); border-radius:10px; background:#fcfdfb; }
+    .question-row { display:grid; grid-template-columns:1fr auto; align-items:center; gap:12px; }
+    .question-row strong { display:block; }
+    .question-row small,.score-row small { color:var(--muted); }
+    .row-actions { display:flex; gap:7px; }
+    .score-row { display:grid; grid-template-columns:minmax(130px,1fr) minmax(145px,.7fr) 120px auto; align-items:end; gap:9px; }
+    .score-row button { min-height:42px; }
+    .empty { padding:17px; border:1px dashed #d8e1d5; border-radius:9px; color:var(--muted); text-align:center; }
+    .inline-filter { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:12px; font-weight:700; }
+    .inline-filter select { min-width:145px; }
+    .reset-area { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
+    .reset-area p { margin:4px 0 0; color:var(--muted); font-size:12px; }
+    @media (max-width:700px) {
+      header { padding:20px 18px; }
+      main { width:calc(100% - 22px); margin-top:22px; }
+      .panel { padding:17px; }
+      .field-grid { grid-template-columns:1fr; }
+      .full { grid-column:auto; }
+      .panel-heading { align-items:flex-start; flex-direction:column; }
+      .score-row { grid-template-columns:1fr 1fr; }
+      .score-row .name-field { grid-column:1/-1; }
+      .score-row .row-actions { grid-column:1/-1; }
+      .question-row { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header><a href="index.html">← Terug naar TopoWereld</a></header>
+  <main>
+    <p class="subtle">TOPOWERELD · BEHEER</p>
+    <h1>Developer-paneel</h1>
+    <p class="intro">Beheer je eigen vragen en de lokale scores. Alles wordt bewaard in deze browser.</p>
+    <div class="notice" id="notice" aria-live="polite"></div>
+
+    <section class="panel auth-box" id="auth-panel" aria-labelledby="auth-title">
+      <h2 id="auth-title">Beheerwachtwoord instellen</h2>
+      <p class="subtle" id="auth-description">Kies een wachtwoord van minimaal 10 tekens. Het wachtwoord wordt niet opgeslagen; alleen een gezouten hash wordt bewaard.</p>
+      <form id="setup-form">
+        <label>Nieuw wachtwoord<input name="password" type="password" minlength="10" autocomplete="new-password" required></label>
+        <label>Herhaal wachtwoord<input name="confirm" type="password" minlength="10" autocomplete="new-password" required></label>
+        <button class="primary" type="submit">Wachtwoord instellen</button>
+      </form>
+      <form id="login-form" hidden>
+        <label>Beheerwachtwoord<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary" type="submit">Inloggen</button>
+      </form>
+      <p class="security-note">Het wachtwoord wordt lokaal gecontroleerd met PBKDF2-SHA-256, een unieke salt en 600.000 rondes. De wachtwoordtekst zelf wordt niet bewaard. Vragen en scores staan wel leesbaar in de browseropslag. Omdat dit een statische pagina is, kan iemand met toegang tot de bestanden of ontwikkelaarstools de toegangsdrempel omzeilen; voor echte toegangsbeveiliging is een server nodig.</p>
+    </section>
+
+    <div id="admin-content" hidden>
+
+    <section class="panel" aria-labelledby="question-title">
+      <div class="panel-heading"><div><h2 id="question-title">Vraag maken</h2><p class="subtle">Een eigen vraag vervangt automatisch een gegenereerde herformulering; de quiz houdt 400 items per gebied.</p></div><button type="button" class="lock-button" id="lock-button">Vergrendelen</button></div>
+      <form id="question-form">
+        <div class="field-grid">
+          <label>Gebied<select name="area" required><option>Nederland</option><option>Europa</option><option>De wereld</option></select></label>
+          <label class="full">Vraag<textarea name="question" maxlength="240" required placeholder="Bijvoorbeeld: Wat is de hoofdstad van ...?"></textarea></label>
+          <label>Antwoord A<input name="answer0" maxlength="100" required></label>
+          <label>Antwoord B<input name="answer1" maxlength="100" required></label>
+          <label>Antwoord C<input name="answer2" maxlength="100" required></label>
+          <label>Antwoord D<input name="answer3" maxlength="100" required></label>
+          <label>Juiste antwoord<select name="correct"><option value="0">Antwoord A</option><option value="1">Antwoord B</option><option value="2">Antwoord C</option><option value="3">Antwoord D</option></select></label>
+          <label>Hint<input name="hint" maxlength="180" placeholder="Optionele hint"></label>
+        </div>
+        <div class="buttons"><button class="primary" type="submit" id="save-question">Vraag toevoegen</button><button type="button" id="cancel-edit" hidden>Annuleren</button></div>
+      </form>
+      <div class="panel-heading" style="margin:24px 0 0"><div><h2>Eigen vragen</h2><p class="subtle" id="question-count"></p></div><label class="inline-filter">Gebied<select id="question-filter"><option>Nederland</option><option>Europa</option><option>De wereld</option></select></label></div>
+      <div class="list" id="question-list"></div>
+      <div class="buttons"><button class="danger" id="reset-questions" type="button">Alle eigen vragen verwijderen</button></div>
+    </section>
+
+    <section class="panel" aria-labelledby="leaderboard-title">
+      <div class="panel-heading"><div><h2 id="leaderboard-title">Leaderboard aanpassen</h2><p class="subtle">Pas namen, gebieden en punten aan. De quizrecords worden daarna bijgewerkt.</p></div><label class="inline-filter">Gebied<select id="leaderboard-filter"><option value="all">Alle gebieden</option><option>Nederland</option><option>Europa</option><option>De wereld</option></select></label></div>
+      <div class="list" id="leaderboard-list"></div>
+      <div class="buttons"><button class="danger" id="reset-leaderboard" type="button">Leaderboard en records resetten</button></div>
+    </section>
+    <section class="panel" aria-labelledby="password-change-title">
+      <h2 id="password-change-title">Wachtwoord veranderen</h2>
+      <p class="subtle">Bevestig je huidige wachtwoord en kies daarna een nieuw wachtwoord van minimaal 10 tekens.</p>
+      <form id="change-password-form">
+        <div class="field-grid">
+          <label>Huidig wachtwoord<input name="current" type="password" autocomplete="current-password" required></label>
+          <label>Nieuw wachtwoord<input name="password" type="password" minlength="10" autocomplete="new-password" required></label>
+          <label>Herhaal nieuw wachtwoord<input name="confirm" type="password" minlength="10" autocomplete="new-password" required></label>
+        </div>
+        <div class="buttons"><button class="primary" type="submit">Nieuw wachtwoord opslaan</button></div>
+      </form>
+    </section>
+    </div>
+  </main>
+  <script>
+    const QUESTION_KEY = "topowereld-custom-questions-v1";
+    const LEADERBOARD_KEY = "topowereld-leaderboard-v1";
+    const RECORDS_KEY = "topowereld-records-v1";
+    const ADMIN_CREDENTIAL_KEY = "topowereld-admin-credential-v1";
+    const PBKDF2_ITERATIONS = 600000;
+    const LIMITS = { Nederland: 354, Europa: 300, "De wereld": 146 };
+    const notice = document.querySelector("#notice");
+    const questionForm = document.querySelector("#question-form");
+    const questionFilter = document.querySelector("#question-filter");
+    const questionList = document.querySelector("#question-list");
+    const leaderboardFilter = document.querySelector("#leaderboard-filter");
+    const leaderboardList = document.querySelector("#leaderboard-list");
+    const cancelEdit = document.querySelector("#cancel-edit");
+    const authPanel = document.querySelector("#auth-panel");
+    const adminContent = document.querySelector("#admin-content");
+    const setupForm = document.querySelector("#setup-form");
+    const loginForm = document.querySelector("#login-form");
+    const authTitle = document.querySelector("#auth-title");
+    const authDescription = document.querySelector("#auth-description");
+    let questions = readArray(QUESTION_KEY);
+    let scores = readArray(LEADERBOARD_KEY).map((entry) => ({ ...entry, id: entry.id || makeId() }));
+    let editingId = null;
+    let unlocked = false;
+
+    function readCredential() {
+      try { return JSON.parse(localStorage.getItem(ADMIN_CREDENTIAL_KEY) || "null"); }
+      catch { return null; }
+    }
+    function toBase64(bytes) {
+      let binary = "";
+      bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+      return btoa(binary);
+    }
+    function fromBase64(value) {
+      return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+    }
+    async function hashPassword(password, salt, iterations = PBKDF2_ITERATIONS) {
+      const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+      const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations, hash: "SHA-256" }, key, 256);
+      return new Uint8Array(bits);
+    }
+    async function storeCredential(password) {
+      if (!crypto?.subtle) throw new Error("Deze browser ondersteunt de benodigde wachtwoordbeveiliging niet.");
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const hash = await hashPassword(password, salt);
+      localStorage.setItem(ADMIN_CREDENTIAL_KEY, JSON.stringify({
+        algorithm: "PBKDF2-SHA-256", iterations: PBKDF2_ITERATIONS,
+        salt: toBase64(salt), hash: toBase64(hash)
+      }));
+    }
+    async function verifyPassword(password) {
+      const credential = readCredential();
+      if (!credential || !crypto?.subtle) return false;
+      try {
+        const actual = await hashPassword(password, fromBase64(credential.salt), credential.iterations);
+        const expected = fromBase64(credential.hash);
+        if (actual.length !== expected.length) return false;
+        let difference = 0;
+        for (let index = 0; index < actual.length; index += 1) difference |= actual[index] ^ expected[index];
+        return difference === 0;
+      } catch { return false; }
+    }
+    function setAuthMode() {
+      const hasPassword = Boolean(readCredential());
+      setupForm.hidden = hasPassword;
+      loginForm.hidden = !hasPassword;
+      authTitle.textContent = hasPassword ? "Inloggen bij beheer" : "Beheerwachtwoord instellen";
+      authDescription.textContent = hasPassword
+        ? "Voer je wachtwoord in om vragen en scores te beheren."
+        : "Kies een wachtwoord van minimaal 10 tekens. Het wachtwoord zelf wordt niet opgeslagen.";
+    }
+    function unlockAdmin() {
+      unlocked = true;
+      authPanel.hidden = true;
+      adminContent.hidden = false;
+      renderQuestions();
+      renderScores();
+      announce("Beheer ontgrendeld.");
+    }
+    setupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (readCredential()) {
+        setAuthMode();
+        announce("Er is al een beheerwachtwoord ingesteld. Log in om verder te gaan.", true);
+        return;
+      }
+      const password = setupForm.elements.password.value;
+      if (password.length < 10) { announce("Kies een wachtwoord van minimaal 10 tekens.", true); return; }
+      if (password !== setupForm.elements.confirm.value) { announce("De wachtwoorden zijn niet hetzelfde.", true); return; }
+      try {
+        await storeCredential(password);
+        setupForm.reset();
+        unlockAdmin();
+      } catch (error) { announce(error.message || "Het wachtwoord kon niet worden opgeslagen.", true); }
+    });
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (await verifyPassword(loginForm.elements.password.value)) {
+        loginForm.reset();
+        unlockAdmin();
+      } else announce("Wachtwoord onjuist.", true);
+    });
+    document.querySelector("#lock-button").addEventListener("click", () => {
+      unlocked = false;
+      adminContent.hidden = true;
+      authPanel.hidden = false;
+      loginForm.reset();
+      setAuthMode();
+      announce("Beheer is vergrendeld.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    document.querySelector("#change-password-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!unlocked) return;
+      const form = event.currentTarget;
+      const current = form.elements.current.value;
+      const next = form.elements.password.value;
+      if (!await verifyPassword(current)) { announce("Het huidige wachtwoord is onjuist.", true); return; }
+      if (next.length < 10) { announce("Het nieuwe wachtwoord moet minimaal 10 tekens hebben.", true); return; }
+      if (next !== form.elements.confirm.value) { announce("De nieuwe wachtwoorden zijn niet hetzelfde.", true); return; }
+      try {
+        await storeCredential(next);
+        form.reset();
+        announce("Je wachtwoord is gewijzigd.");
+      } catch (error) { announce(error.message || "Het wachtwoord kon niet worden gewijzigd.", true); }
+    });
+    setAuthMode();
+
+    function readArray(key) {
+      try {
+        const value = JSON.parse(localStorage.getItem(key) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch {
+        return [];
+      }
+    }
+    function makeId() { return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`; }
+    function announce(message, isError = false) {
+      notice.textContent = message;
+      notice.style.color = isError ? "#a14f3c" : "#376a43";
+    }
+    function saveQuestions() {
+      try {
+        localStorage.setItem(QUESTION_KEY, JSON.stringify(questions));
+        renderQuestions();
+        announce("Eigen vragen bewaard. Herlaad de quiz om ze te gebruiken.");
+      } catch {
+        announce("Opslaan is niet gelukt. Controleer of browseropslag beschikbaar is.", true);
+      }
+    }
+    function renderQuestions() {
+      const area = questionFilter.value;
+      const items = questions.filter((item) => item.area === area);
+      const used = questions.filter((item) => item.area === area).length;
+      document.querySelector("#question-count").textContent = `${used} van maximaal ${LIMITS[area]} eigen vragen`;
+      questionList.replaceChildren();
+      if (!items.length) {
+        questionList.innerHTML = '<div class="empty">Je hebt nog geen eigen vragen voor dit gebied.</div>';
+        return;
+      }
+      items.forEach((item) => {
+        const row = document.createElement("article");
+        row.className = "question-row";
+        const text = document.createElement("div");
+        const title = document.createElement("strong");
+        const detail = document.createElement("small");
+        title.textContent = item.question;
+        detail.textContent = `Goed antwoord: ${item.answers[item.correct]}`;
+        text.append(title, detail);
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.textContent = "Bewerken";
+        edit.addEventListener("click", () => editQuestion(item));
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "danger";
+        remove.textContent = "Verwijderen";
+        remove.addEventListener("click", () => {
+          questions = questions.filter((question) => question.id !== item.id);
+          saveQuestions();
+        });
+        actions.append(edit, remove);
+        row.append(text, actions);
+        questionList.append(row);
+      });
+    }
+    function editQuestion(item) {
+      editingId = item.id;
+      questionForm.elements.area.value = item.area;
+      questionForm.elements.question.value = item.question;
+      item.answers.forEach((answer, index) => { questionForm.elements[`answer${index}`].value = answer; });
+      questionForm.elements.correct.value = String(item.correct);
+      questionForm.elements.hint.value = item.hint || "";
+      document.querySelector("#question-title").textContent = "Vraag aanpassen";
+      document.querySelector("#save-question").textContent = "Wijzigingen opslaan";
+      cancelEdit.hidden = false;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    function clearQuestionForm() {
+      editingId = null;
+      questionForm.reset();
+      document.querySelector("#question-title").textContent = "Vraag maken";
+      document.querySelector("#save-question").textContent = "Vraag toevoegen";
+      cancelEdit.hidden = true;
+    }
+    questionForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = new FormData(questionForm);
+      const area = String(data.get("area"));
+      const old = questions.find((item) => item.id === editingId);
+      const countInArea = questions.filter((item) => item.area === area && item.id !== editingId).length;
+      if (!old && countInArea >= LIMITS[area]) {
+        announce(`Dit gebied heeft al ${LIMITS[area]} eigen vragen.`, true);
+        return;
+      }
+      if (old && old.area !== area && countInArea >= LIMITS[area]) {
+        announce(`Dit gebied heeft al ${LIMITS[area]} eigen vragen.`, true);
+        return;
+      }
+      const answers = [0, 1, 2, 3].map((index) => String(data.get(`answer${index}`)).trim());
+      if (new Set(answers.map((answer) => answer.toLocaleLowerCase())).size !== 4) {
+        announce("Vul vier verschillende antwoorden in.", true);
+        return;
+      }
+      const entry = {
+        id: editingId || makeId(), area,
+        question: String(data.get("question")).trim(),
+        answers,
+        correct: Number(data.get("correct")),
+        hint: String(data.get("hint")).trim()
+      };
+      if (editingId) questions = questions.map((item) => item.id === editingId ? entry : item);
+      else questions.push(entry);
+      questionFilter.value = area;
+      clearQuestionForm();
+      saveQuestions();
+    });
+    cancelEdit.addEventListener("click", clearQuestionForm);
+    questionFilter.addEventListener("change", renderQuestions);
+    document.querySelector("#reset-questions").addEventListener("click", () => {
+      if (!questions.length || !confirm("Alle zelfgemaakte vragen verwijderen?")) return;
+      questions = [];
+      saveQuestions();
+      clearQuestionForm();
+    });
+
+    function saveScores() {
+      try {
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(scores));
+        const records = {};
+        scores.forEach((entry) => { records[entry.area] = Math.max(records[entry.area] || 0, Number(entry.score) || 0); });
+        localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+        renderScores();
+        announce("Leaderboard en records bijgewerkt.");
+      } catch {
+        announce("Opslaan van de scores is niet gelukt.", true);
+      }
+    }
+    function renderScores() {
+      const area = leaderboardFilter.value;
+      const items = scores.filter((entry) => area === "all" || entry.area === area)
+        .sort((a, b) => Number(b.score) - Number(a.score));
+      leaderboardList.replaceChildren();
+      if (!items.length) {
+        leaderboardList.innerHTML = '<div class="empty">Er staan nog geen scores op het leaderboard.</div>';
+        return;
+      }
+      items.forEach((entry) => {
+        const row = document.createElement("div");
+        row.className = "score-row";
+        const nameLabel = document.createElement("label");
+        nameLabel.className = "name-field";
+        nameLabel.textContent = "Naam";
+        const name = document.createElement("input");
+        name.value = entry.name || "Speler";
+        name.maxLength = 24;
+        nameLabel.append(name);
+        const areaLabel = document.createElement("label");
+        areaLabel.textContent = "Gebied";
+        const select = document.createElement("select");
+        ["Nederland", "Europa", "De wereld"].forEach((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          select.append(option);
+        });
+        select.value = entry.area;
+        areaLabel.append(select);
+        const scoreLabel = document.createElement("label");
+        scoreLabel.textContent = "Punten";
+        const points = document.createElement("input");
         points.type = "number";
         points.min = "0";
         points.max = "999999";
