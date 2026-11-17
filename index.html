@@ -1148,6 +1148,7 @@ for (const [area, targetTotal] of Object.entries(questionPoolTargets)) {
 const QUESTION_TIME = 15;
 const STORAGE_KEY = "topowereld-records-v1";
 const LEADERBOARD_KEY = "topowereld-leaderboard-v1";
+const PLAYER_NAME_KEY = "topowereld-player-name-v1";
 // Fill these with the Project URL and publishable key from Supabase.
 const LEADERBOARD_SUPABASE_URL = "";
 const LEADERBOARD_SUPABASE_KEY = "";
@@ -1579,13 +1580,25 @@ function showResult(reason = "", showCorrectMapLocation = false) {
   const medal = score >= 900 ? "🥇" : score >= 600 ? "🥈" : score >= 300 ? "🥉" : "🌱";
   feedback.classList.remove("wrong");
   feedback.innerHTML = `<div class="quiz-result-medal">${medal}</div><div class="quiz-result-score">${score}<small>punten verdiend</small></div><p class="quiz-result-message">${reason ? `${reason}<br>` : ""}${message}<br>Reeks: ${bestStreak} goed achter elkaar.</p><form class="leaderboard-submit"><label>Naam voor het leaderboard<input name="playerName" maxlength="24" value="Speler" required></label><button type="submit">Score opslaan</button></form>`;
+  const playerNameInput = feedback.querySelector('input[name="playerName"]');
+  try {
+    playerNameInput.value = localStorage.getItem(PLAYER_NAME_KEY) || "Speler";
+  } catch {
+    playerNameInput.value = "Speler";
+  }
   feedback.querySelector(".leaderboard-submit").addEventListener("submit", (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const button = form.querySelector("button");
+    const playerName = form.elements.playerName.value.trim().slice(0, 24) || "Speler";
+    try {
+      localStorage.setItem(PLAYER_NAME_KEY, playerName);
+    } catch (error) {
+      console.warn("De spelersnaam kon niet worden onthouden.", error);
+    }
     button.disabled = true;
     button.textContent = "Opslaan…";
-    saveLeaderboardScore(form.elements.playerName.value).then((saved) => {
+    saveLeaderboardScore(playerName).then((saved) => {
       button.textContent = saved ? "Score opgeslagen" : "Opnieuw proberen";
       button.disabled = false;
     });
