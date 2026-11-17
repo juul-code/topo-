@@ -563,6 +563,7 @@ body { background: #f5f4ee; }
 .leaderboard-list li:nth-child(3)::before { content: "🥉"; }
 .leaderboard-score { color: #4f7d54; font-weight: 800; }
 .leaderboard-empty { color: #879389; font-size: 12px; }
+.leaderboard-status { margin: 10px 0 0; color: #879389; font-size: 11px; text-align: center; }
 .leaderboard-submit { display: flex; align-items: end; justify-content: center; gap: 9px; margin: 14px auto 0; }
 .leaderboard-submit label { display: grid; gap: 5px; color: #728176; font-size: 10px; font-weight: 700; text-align: left; }
 .leaderboard-submit input { width: min(230px, 52vw); min-height: 38px; padding: 8px 10px; border: 1px solid #dfe7dc; border-radius: 8px; background: white; color: #35523e; font: 600 12px "DM Sans", sans-serif; }
@@ -639,6 +640,7 @@ body { background: #f5f4ee; }
         <section class="leaderboard" aria-labelledby="leaderboard-title">
           <div class="leaderboard-heading"><div><div class="eyebrow section-eyebrow">JOUW SCORES</div><h2 id="leaderboard-title">Leaderboard</h2></div><label>Gebied <select class="leaderboard-area" aria-label="Kies een gebied voor het leaderboard"><option>Nederland</option><option>Europa</option><option>De wereld</option></select></label></div>
           <ol class="leaderboard-list" aria-live="polite"></ol>
+          <p class="leaderboard-status" aria-live="polite"></p>
         </section>
       </section>
 
@@ -1146,6 +1148,9 @@ for (const [area, targetTotal] of Object.entries(questionPoolTargets)) {
 const QUESTION_TIME = 15;
 const STORAGE_KEY = "topowereld-records-v1";
 const LEADERBOARD_KEY = "topowereld-leaderboard-v1";
+// Fill these with the Project URL and publishable key from Supabase.
+const LEADERBOARD_SUPABASE_URL = "";
+const LEADERBOARD_SUPABASE_KEY = "";
 const dialog = document.querySelector(".quiz-dialog");
 const fullscreenButton = document.querySelector(".fullscreen-toggle");
 const areaSelect = document.querySelector(".game-area-select");
@@ -1182,9 +1187,11 @@ let shotTimerId = null;
 let aimTargetIndex = 0;
 let records = readRecords();
 let leaderboard = readLeaderboard();
+let leaderboardIsShared = false;
 
 const leaderboardArea = document.querySelector(".leaderboard-area");
 const leaderboardList = document.querySelector(".leaderboard-list");
+const leaderboardStatus = document.querySelector(".leaderboard-status");
 
 function readLeaderboard() {
   try {
@@ -1222,10 +1229,61 @@ function renderLeaderboard() {
   });
 }
 
-function saveLeaderboardScore(name, entryId) {
-  const savedEntry = leaderboard.find((entry) => entry.id === entryId);
-  if (savedEntry) savedEntry.name = name.trim().slice(0, 24) || "Speler";
-  else leaderboard.push({ id: entryId, area: activeArea, name: name.trim().slice(0, 24) || "Speler", score });
+function setLeaderboardStatus(message) {
+  if (leaderboardStatus) leaderboardStatus.textContent = message;
+}
+
+async function loadSharedLeaderboard() {
+  if (!LEADERBOARD_SUPABASE_URL || !LEADERBOARD_SUPABASE_KEY) {
+    leaderboardIsShared = false;
+    setLeaderboardStatus("Scores staan alleen op dit apparaat. Koppel een database om ze te delen.");
+    return;
+  }
+  try {
+    const response = await fetch(`${LEADERBOARD_SUPABASE_URL}/rest/v1/leaderboard_scores?select=area,name,score&order=score.desc&limit=300`, {
+      headers: {
+        apikey: LEADERBOARD_SUPABASE_KEY,
+        Authorization: `Bearer ${LEADERBOARD_SUPABASE_KEY}`
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const entries = await response.json();
+    leaderboard = Array.isArray(entries) ? entries : [];
+    leaderboardIsShared = true;
+    setLeaderboardStatus("Gedeeld leaderboard: scores zijn zichtbaar op alle apparaten.");
+    renderLeaderboard();
+  } catch (error) {
+    console.warn("Het gedeelde leaderboard kon niet worden geladen.", error);
+    setLeaderboardStatus("Gedeelde scores laden niet. Controleer de database-instellingen.");
+  }
+}
+
+async function saveLeaderboardScore(name) {
+  const entry = { area: activeArea, name: name.trim().slice(0, 24) || "Speler", score };
+  if (LEADERBOARD_SUPABASE_URL && LEADERBOARD_SUPABASE_KEY) {
+    try {
+      const response = await fetch(`${LEADERBOARD_SUPABASE_URL}/rest/v1/leaderboard_scores`, {
+        method: "POST",
+        headers: {
+          apikey: LEADERBOARD_SUPABASE_KEY,
+          Authorization: `Bearer ${LEADERBOARD_SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify(entry)
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      leaderboardArea.value = activeArea;
+      await loadSharedLeaderboard();
+      setLeaderboardStatus("Je score is opgeslagen en gedeeld met alle apparaten.");
+      return true;
+    } catch (error) {
+      console.warn("Je score kon niet naar het gedeelde leaderboard worden gestuurd.", error);
+      setLeaderboardStatus("Score delen lukte niet. Probeer het later opnieuw.");
+      return false;
+    }
+  }
+  leaderboard.push({ id: `score-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, ...entry });
   leaderboard = leaderboard.filter((entry) => entry.area === activeArea)
     .sort((a, b) => b.score - a.score).slice(0, 10)
     .concat(leaderboard.filter((entry) => entry.area !== activeArea));
@@ -1236,10 +1294,12 @@ function saveLeaderboardScore(name, entryId) {
   }
   leaderboardArea.value = activeArea;
   renderLeaderboard();
+  return true;
 }
 
 leaderboardArea?.addEventListener("change", renderLeaderboard);
 renderLeaderboard();
+loadSharedLeaderboard();
 
 function readRecords() {
   try {
@@ -1518,15 +1578,17 @@ function showResult(reason = "", showCorrectMapLocation = false) {
   answerList.replaceChildren();
   const medal = score >= 900 ? "🥇" : score >= 600 ? "🥈" : score >= 300 ? "🥉" : "🌱";
   feedback.classList.remove("wrong");
-  const entryId = `score-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  saveLeaderboardScore("Speler", entryId);
-  feedback.innerHTML = `<div class="quiz-result-medal">${medal}</div><div class="quiz-result-score">${score}<small>punten verdiend</small></div><p class="quiz-result-message">${reason ? `${reason}<br>` : ""}${message}<br>Reeks: ${bestStreak} goed achter elkaar. De score staat op het leaderboard als Speler.</p><form class="leaderboard-submit"><label>Pas je naam aan<input name="playerName" maxlength="24" value="Speler" required></label><button type="submit">Naam opslaan</button></form>`;
+  feedback.innerHTML = `<div class="quiz-result-medal">${medal}</div><div class="quiz-result-score">${score}<small>punten verdiend</small></div><p class="quiz-result-message">${reason ? `${reason}<br>` : ""}${message}<br>Reeks: ${bestStreak} goed achter elkaar.</p><form class="leaderboard-submit"><label>Naam voor het leaderboard<input name="playerName" maxlength="24" value="Speler" required></label><button type="submit">Score opslaan</button></form>`;
   feedback.querySelector(".leaderboard-submit").addEventListener("submit", (event) => {
     event.preventDefault();
     const form = event.currentTarget;
-    saveLeaderboardScore(form.elements.playerName.value, entryId);
-    form.querySelector("button").textContent = "Naam bijgewerkt";
-    form.querySelector("button").disabled = true;
+    const button = form.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Opslaan…";
+    saveLeaderboardScore(form.elements.playerName.value).then((saved) => {
+      button.textContent = saved ? "Score opgeslagen" : "Opnieuw proberen";
+      button.disabled = false;
+    });
   });
   nextButton.disabled = false;
   nextButton.hidden = false;
